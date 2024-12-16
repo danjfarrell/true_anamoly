@@ -68,7 +68,7 @@ def generate_imu_packet(packet_count):
 
     return packet, (packet_count, x_rate, y_rate, z_rate)
 
-def send_imu_data(uart_port, baud_rate):
+def send_imu_data(uart_port, baud_rate, original_data_store):
 
     global terminate
 
@@ -78,6 +78,7 @@ def send_imu_data(uart_port, baud_rate):
             packet_count = 0
             while not terminate:
                 imu_packet, (packet_count, x_rate, y_rate, z_rate) = generate_imu_packet(packet_count)
+                original_data_store[packet_count] = (x_rate, y_rate, z_rate)
                 ser.write(imu_packet)
                 packet_count += 1
                 time.sleep(0.08)  # sleep for 80ms
@@ -135,7 +136,7 @@ def main():
     original_data_store = {}  # store sent IMU data keyed by packet count
 
     # start the IMU data sender in a separate thread
-    sender_thread = threading.Thread(target=send_imu_data, args=(uart_port, baud_rate))
+    sender_thread = threading.Thread(target=send_imu_data, args=(uart_port, baud_rate, original_data_store))
     sender_thread.daemon = True
     sender_thread.start()
 
@@ -149,10 +150,10 @@ def main():
         with serial.Serial(uart_port, baud_rate, timeout=1) as ser:
             packet_count = 0
             while True:
-                imu_packet, (packet_count, x_rate, y_rate, z_rate) = generate_imu_packet(packet_count)
-                original_data_store[packet_count] = (x_rate, y_rate, z_rate)
-                ser.write(imu_packet)
-                packet_count += 1
+                #imu_packet, (packet_count, x_rate, y_rate, z_rate) = generate_imu_packet(packet_count)
+                #original_data_store[packet_count] = (x_rate, y_rate, z_rate)
+                #ser.write(imu_packet)
+                #packet_count += 1
                 time.sleep(0.08)
     except KeyboardInterrupt:
 
